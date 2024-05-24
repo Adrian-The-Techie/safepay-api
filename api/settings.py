@@ -15,6 +15,7 @@ from pathlib import Path
 import cloudinary
 import cloudinary.api
 import cloudinary.uploader
+import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -84,14 +85,24 @@ WSGI_APPLICATION = 'api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'safepay',
-        'USERNAME':'adrian',
-        'PASSWORD':'101212Ad*#+',
+DATABASES = {}
+
+if config("MODE") == "dev":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": "",
+        }
     }
-}
+# production
+else:
+    db_from_env = dj_database_url.config(conn_max_age=500)
+    DATABASES = {"default": dj_database_url.config(default=config("DATABASE_URL"))}
+    DATABASES["default"].update(db_from_env)
 
 
 # Password validation
