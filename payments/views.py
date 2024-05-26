@@ -1,8 +1,11 @@
 from django.http import JsonResponse
 from django.shortcuts import render
+
+from payments.models import Payin
 from .helpers.tanda import disburse, deposit
 from rest_framework.decorators import api_view
 from shared import generateRefNo
+from django.db.models import F, Q, Sum
 
 # Create your views here.
 
@@ -26,7 +29,12 @@ def disburse(request):
 
         
     except Exception as e:
-        return JsonResponse( {
+        return JsonResponse({
             "status":0,
             "message":f"Error {e}"
         })
+    
+
+@api_view(['GET'])
+def getTransactions(request):
+    payins=Payin.objects.filter(Q())

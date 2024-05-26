@@ -24,7 +24,7 @@ class UserView(APIView):
             first_name=data['firstName'],
             last_name=data['lastName'],
             phone_number=data['primaryPhone'],
-            secondary_phone=format_phone_number(data['secondaryPhone']),
+            secondary_phone=data['secondaryPhone'],
             idNumber=data['idNumber'],
             username=generateRefNo(),
             email=data['email'],
@@ -41,9 +41,28 @@ class UserView(APIView):
         userInstance.save()
         sendSms(userInstance.phone_number, f"Welcome to Safepay. You account has been created successfully")
 
+        phones=[
+            {
+                "id": userInstance.phone_number,
+                "label": f"Primary phone: {userInstance.phone_number}",
+            },
+        ]
+        if(userInstance.secondary_phone != ""):
+            phones.append(
+               {
+                "id": userInstance.secondary_phone,
+                "label": f"Secondary phone: {userInstance.secondary_phone}",
+            
+            })
+
         return JsonResponse({
             "status":1,
             "message":"Registration successful",
+            "data":{
+                "primaryPhone":userInstance.phone_number,
+                "first_name":userInstance.first_name,
+                "phones":phones
+            }
         })
 
         # except Exception as e:

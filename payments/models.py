@@ -3,11 +3,7 @@ from user.models import User
 
 # Create your models here.
 
-PAYMENT_STATUS=[
-    ("PROCESSING", "PROCESSING"),
-    ("SUCCESSFUL", "SUCCESSFUL"),
-    ("FAILED", "FAILED")
-]
+
 
 class Payin(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
@@ -18,7 +14,8 @@ class Payin(models.Model):
     responsePayload=models.TextField()
     callbackPayload=models.TextField()
     url=models.UUIDField()
-    status=models.CharField(max_length=255, choices=PAYMENT_STATUS)
+    status=models.CharField(max_length=255, default="PENDING")
+    type=models.CharField(max_length=255, default="TRANSFER")
 
 class Payout(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
@@ -29,5 +26,7 @@ class Payout(models.Model):
     responsePayload=models.TextField()
     callbackPayload=models.TextField()
     url=models.UUIDField()
-    status=models.CharField(max_length=255, choices=PAYMENT_STATUS)
+    status=models.CharField(max_length=255, default="PENDING")
+    type=models.CharField(max_length=255, default="TRANSFER")
+
     
