@@ -73,44 +73,45 @@ class UserView(APIView):
         
 @api_view(["POST"])
 def login(request):
-# try:
-    user = User.objects.get(phone_number=request.data["phone"])
-    if check_password(request.data["password"], user.password) == False:
-        raise Exception("User not found")
-        # return Response(
-        #     {"status":0,"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
-        # )
+    try:
+        user = User.objects.get(phone_number=request.data["phone"])
+        if check_password(request.data["password"], user.password) == False:
+            raise Exception("User not found")
+            return Response(
+                {"status":0,"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+            )
 
-    else:
-        token = Token.objects.get_or_create(user=user)[0].key
-        phones=[
-            {
-                "id": user.phone_number,
-                "label": f"Primary phone: {user.phone_number}",
-            },
-        ]
-        if(user.secondary_phone != ""):
-            phones.append(
-            {
-                "id": user.secondary_phone,
-                "label": f"Secondary phone: {user.secondary_phone}",
-            
-            })
+        else:
+            token = Token.objects.get_or_create(user=user)[0].key
+            phones=[
+                {
+                    "id": user.phone_number,
+                    "label": f"Primary phone: {user.phone_number}",
+                },
+            ]
+            if(user.secondary_phone != ""):
+                phones.append(
+                {
+                    "id": user.secondary_phone,
+                    "label": f"Secondary phone: {user.secondary_phone}",
+                
+                })
 
 
-        response = {
-            "status": 1,
-            "message": "Login successful",
-            "data": {
-                "primaryPhone":user.phone_number,
-                "first_name":user.first_name,
-                "phones":phones,
-                "token": token,
-            },
-        }
+            response = {
+                "status": 1,
+                "message": "Login successful",
+                "data": {
+                    "primaryPhone":user.phone_number,
+                    "first_name":user.first_name,
+                    "last_name":user.last_name,
+                    "phones":phones,
+                    "token": token,
+                },
+            }
 
-        return JsonResponse(response)
-    # except User.DoesNotExist:
-    #     return JsonResponse(
-    #         {"status":0,"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
-    #     )
+            return JsonResponse(response)
+    except User.DoesNotExist:
+        return JsonResponse(
+            {"status":0,"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+        )
