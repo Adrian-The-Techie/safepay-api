@@ -35,6 +35,21 @@ def disburse(request):
         })
     
 
+@api_view(['POST'])
+def result(request):
+
+    print(request.data)
+
+    return JsonResponse(
+        {
+            "status":1,
+            "data":{
+                "message":"Successfull"
+            }
+        }
+    )
+    
+
 @api_view(['GET'])
 def getTransactions(request):
     payins=Payin.objects.filter(Q())

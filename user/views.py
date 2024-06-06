@@ -76,7 +76,6 @@ def login(request):
     try:
         user = User.objects.get(phone_number=request.data["phone"])
         if check_password(request.data["password"], user.password) == False:
-            raise Exception("User not found")
             return Response(
                 {"status":0,"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
             )

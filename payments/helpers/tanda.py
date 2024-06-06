@@ -22,6 +22,7 @@ def generateToken():
 
 
 def deposit(data):
+    print(config('TANDA_LIVE_ENDPOINT'))
     payload = {
         "commandId": "CustomerPayment",
         "serviceProviderId": data['serviceProvider'],
@@ -38,7 +39,7 @@ def deposit(data):
         "referenceParameters":[
             {
                 "id":"resultUrl",
-                "value":f"{config('LIVE_ENDPOINT')}/",
+                "value":f"{config('LIVE_ENDPOINT')}api/v1/payments/result",
             }
         ],
         "reference":data["referenceNo"]
@@ -61,7 +62,7 @@ def disburse(data):
         "serviceProviderId": data['serviceProvider'],
         "amount":data['amount'],
         "accountNumber":data['recipient'],
-        "resultUrl":f"{config('LIVE_ENDPOINT')}/"
+        "resultUrl":f"{config('LIVE_ENDPOINT')}/result"
     }
     headers = {
         "accept": "application/json",
