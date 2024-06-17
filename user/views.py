@@ -95,6 +95,11 @@ def login(request):
                     "label": f"Secondary phone: {user.secondary_phone}",
                 
                 })
+            phones.append(
+                {
+                    "id": "other",
+                    "label": "Other",
+                })
 
 
             response = {

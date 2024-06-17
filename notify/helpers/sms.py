@@ -1,24 +1,26 @@
 import requests
 from decouple import config
+import uuid
+import json
 
 
-def sendSms(phone_number, message):
+def sendSms(messages):
+    print(messages)
     smsEndpoint = config("SMS_ENDPOINT")
     headers = {
         "Content-Type": "application/json",
+        "api-key": config("SMS_API_KEY")
     }
-    print(message)
 
     data = {
-        "SenderId": config("SMS_SENDER_ID"),
-        "Message": message,
-        "MobileNumbers": phone_number,
-        "ApiKey": config("SMS_API_KEY"),
-        "ClientId": config("SMS_CLIENT_ID"),
-    }
-
-    response = requests.get(smsEndpoint, params=data, headers=headers)
+            "profile_code": config('SMS_PROFILE_ID'),
+            "messages": messages,
+            "dlr_callback_url": config('LIVE_ENDPOINT')
+        }
     
-    print(response.url)
+
+    response = requests.post(smsEndpoint, json=data, headers=headers)
+
+    print(response.json())
 
     return response

@@ -20,29 +20,64 @@ def generateToken():
 
     return response.json()
 
+def _getAction(action):
+    if action == "deposit":
+        return "CustomerPayment"
+    elif action == "sendMoney":
+        return "CDeposit"
+    elif action == "buyAirtime":
+        return "TopupFlexi"
+    elif action == "buyGoods":
+        return "BuyGoods"
+    elif action == "payBill":
+        return "BillPay"
+    else:
+        return "INVALID"
 
-def deposit(data):
-    print(config('TANDA_LIVE_ENDPOINT'))
+
+def _getRequestParameters(action, data):
+    requestParameters=[
+            {
+                "id": "amount",
+                "value": data['amount'],
+                "label": "Amount"
+            },
+            {
+                "id": "accountNumber" if action != "BuyGoods"  else "merchantNumber",
+                "value":  data['accountNumber' if action == "CustomerPayment" else 'recipient'],
+                "label": "AccountNumber"
+            },
+        ]
+
+    if action == "payBill":
+        requestParameters.append(
+            {
+                {
+                "id": "merchantNumber" ,
+                "value": data['recipient'],
+                "label": "MerchantNumber"
+            },
+            }
+        )
+    
+    return requestParameters
+
+
+def transact(data):
+    print(data)
+    commandID= _getAction(action=data['action'])
+    requestParameters= _getRequestParameters(commandID, data)
     payload = {
-        "commandId": "CustomerPayment",
-        "serviceProviderId": data['serviceProvider'],
-        "requestParameters":[
-            {
-                "id":"amount",
-                "value":data['amount'],
-            },
-            {
-                "id":"accountNumber",
-                "value":data['accountNumber'],
-            },
-        ],
+        "commandId": commandID,
+        "serviceProviderId": "MPESA" if data['action'] == "deposit" or data['action'] == "buyGoods" or data['action'] == "payBill" else data['serviceProvider'],
+        "requestParameters": requestParameters,
         "referenceParameters":[
             {
                 "id":"resultUrl",
-                "value":f"{config('LIVE_ENDPOINT')}api/v1/payments/result",
+                "value":f"{config('LIVE_ENDPOINT')}/api/v1/payments/result?action={data['action']}",
             }
         ],
-        "reference":data["referenceNo"]
+        "reference":data["reference"]
     }
     headers = {
         "accept": "application/json",
@@ -51,26 +86,6 @@ def deposit(data):
     }
 
     response = requests.post(REQUEST_URL, json=payload, headers=headers)
-    print(response.text)
-
-    return response.json()
-
-def disburse(data):
-
-    payload = {
-        "commandId": "CDeposit",
-        "serviceProviderId": data['serviceProvider'],
-        "amount":data['amount'],
-        "accountNumber":data['recipient'],
-        "resultUrl":f"{config('LIVE_ENDPOINT')}/result"
-    }
-    headers = {
-        "accept": "application/json",
-        "content-type": "application/json"
-    }
-
-    response = requests.post(REQUEST_URL, json=payload, headers=headers)
-    print(response.text)
 
     return response.json()
 
