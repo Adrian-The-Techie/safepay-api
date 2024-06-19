@@ -11,6 +11,8 @@ from shared import format_phone_number, generateRefNo
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 import math
+from payments.tasks import notifyBySMS
+import uuid
 
 # from shared import generateRefNo
 
@@ -18,7 +20,7 @@ import math
 
 class UserView(APIView):
     def post(self, request):
-        data=request.POST
+        data=request.data
         files=request.FILES
         print(data)
         
@@ -42,7 +44,16 @@ class UserView(APIView):
             userInstance.id_front = files['selfie']
 
         userInstance.save()
-        # sendSms(userInstance.phone_number, f"Welcome to Safepay. You account has been created successfully")
+        # send sms
+        messages=[
+            {
+                "mobile_number":userInstance.phone_number,
+                "message":"Welcome to Safepay. You account has been created successfully",
+                "message_type": "transactional",
+                "message_ref": f"{uuid.uuid4()}"
+            },
+        ]
+        notifyBySMS.delay(messages)
 
         phones=[
             {
