@@ -102,7 +102,7 @@ def login(request):
                     "label": f"Primary phone: {user.phone_number}",
                 },
             ]
-            if(user.secondary_phone != ""):
+            if(user.secondary_phone != None):
                 phones.append(
                 {
                     "id": user.secondary_phone,
