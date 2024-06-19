@@ -1,2 +1,3 @@
-release: python manage.py makemigrations && python manage.py migrate && python -m celery -A api worker -l info
+release: python manage.py makemigrations && python manage.py migrate
 web: gunicorn api.wsgi --log-file -
+celery: celery -A api worker -l info
