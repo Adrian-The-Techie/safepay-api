@@ -42,23 +42,41 @@ def _getRequestParameters(action, data):
                 "value": data['amount'],
                 "label": "Amount"
             },
-            {
-                "id": "accountNumber" if action != "BuyGoods"  else "merchantNumber",
-                "value":  data['accountNumber' if action == "CustomerPayment" else 'recipient'],
-                "label": "AccountNumber"
-            },
+            
         ]
 
-    if action == "payBill":
+    if action == "CustomerPayment" or action == "CDeposit" or action == "TopupFlexi":
+        requestParameters.append({
+                "id": "accountNumber",
+                "value":  data['recipient'] if action == "CDeposit" or action == "TopupFlexi" else data['accountNumber'],
+                "label": "AccountNumber"
+        })
+    if action == "BuyGoods":
         requestParameters.append(
+            
             {
-                {
                 "id": "merchantNumber" ,
                 "value": data['recipient'],
-                "label": "MerchantNumber"
+                "label": "merchantNumber"
             },
-            }
         )
+    
+    if action == "BillPay":
+        requestParameters.append(
+            {
+                "id": "businessNumber" ,
+                "value": data['recipient'],
+                "label": "BusinessNumber"
+            },
+        )
+        requestParameters.append({
+                "id": "accountNumber" ,
+                "value": data['receiverAccount'],
+                "label": "accountNumber"
+            },)
+
+
+    print(requestParameters)
     
     return requestParameters
 
@@ -88,8 +106,3 @@ def transact(data):
     response = requests.post(REQUEST_URL, json=payload, headers=headers)
 
     return response.json()
-
-
-def transactionFees():
-
-    return 1

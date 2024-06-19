@@ -8,6 +8,9 @@ from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.authtoken.models import Token
 from notify.helpers.sms import sendSms
 from shared import format_phone_number, generateRefNo
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+import math
 
 # from shared import generateRefNo
 
@@ -119,3 +122,25 @@ def login(request):
         return JsonResponse(
             {"status":0,"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
         )
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def getHomeData(request):
+    totalMoneySpent=request.user.total_money_spent
+    moneyOnAirtime=math.floor(((request.user.money_on_airtime/totalMoneySpent)*100))
+    moneyOnPaybill=math.floor((request.user.money_on_paybill/totalMoneySpent)*100)
+    moneyOnBuyGoods=math.floor((request.user.money_on_buy_goods/totalMoneySpent)*100)
+    moneySent=math.floor((request.user.money_sent/totalMoneySpent)*100)
+
+    return JsonResponse({
+        "status":1,
+        "message":"Home data",
+        "data":{
+            "totalMoneySpent":totalMoneySpent,
+            "moneyOnAirtime":moneyOnAirtime,
+            "moneyOnPaybill":moneyOnPaybill,
+            "moneyOnBuyGoods":moneyOnBuyGoods,
+            "moneySent":moneySent
+        }
+        
+    })

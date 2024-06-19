@@ -19,6 +19,16 @@ def _getPayoutStatus(action):
     elif action == "payBill":
         return "BILL PAYMENT"
 
+def _getPayoutType(action):
+    if action == "sendMoney":
+        return "SEND MONEY"
+    elif action == "buyAirtime":
+        return "BUY AIRTIME"
+    elif action == "buyGoods":
+        return "BUY GOODS"
+    elif action == "payBill":
+        return "PAY BILL"
+
 
 @shared_task()
 def notifyBySMS(messages):
@@ -30,16 +40,19 @@ def collect(data, userId):
         "reference":generateRefNo(),
         "serviceProvider": data['serviceProvider'],
         "accountNumber": data['accountNumber'],
-        "amount":data['amount'],
+        "amount":data['amountAfterFee'],
         "action":"deposit"
     }
 
     disburseData={
         "serviceProvider":payinData['serviceProvider'],
         "recipient":data['receiver'],
-        "amount":payinData['amount'], 
-        "action":data['action']
+        "amount":data['amount'], 
+        "action":data['action'],
+        "fee":data['fee']
     }
+    if "receiverAccount" in data:
+        disburseData["receiverAccount"]=data['receiverAccount']
     depoRes=transact(payinData)
 
     payin = Payin.objects.create(
@@ -80,7 +93,8 @@ def payout(action, res):
                 destination_account=disburseData['recipient'],
                 responsePayload=disburseRes,
                 url=uuid.uuid4(),
-                type="TRANSFER"
+                fee=int(disburseData['fee']),
+                type=_getPayoutType(disburseData['action'])
             )
 
         if res['status'] == "500000":
@@ -90,10 +104,25 @@ def payout(action, res):
         # update payout
     else:
         if res['status'] == "000000":
+            transactionType=_getPayoutType(action)
             # update payout
             payout = Payout.objects.filter(reference_no = res['reference'])
-            payout.update(callbackPayload = res, status=f"{_getPayoutStatus(action)} DISBURSED")
+            payout.update(callbackPayload = res, message=f"{_getPayoutStatus(action)} DISBURSED", status="SUCCESSFUL")
             
+            # update user account spending balance types
+            user=payout.first().user
+            if transactionType == "BUY AIRTIME":
+                user.money_on_airtime += payout.first().amount
+            elif transactionType == "BUY GOODS":
+                user.money_on_buy_goods += payout.first().amount
+            elif transactionType == "PAY BILL":
+                user.money_on_paybill += payout.first().amount
+            elif transactionType == "SEND MONEY":
+                user.money_sent += payout.first().amount
+
+            user.total_money_spent += payout.first().amount
+
+            user.save()
 
             # send message
             senderPhone=Payin.objects.get(reference_no = payout.first().payin_ref_no).source_account
@@ -115,7 +144,7 @@ def payout(action, res):
                     }
                 ]
             elif action == "buyAirtime":
-                receiverMessage=f"{payout.first().reference_no} confirmed. You have received Ksh{payout.first().amount} airtime from SAFEPAY on {formatted_time}\n\Third party reference number: {res['receiptNumber']}"
+                receiverMessage=f"{payout.first().reference_no} confirmed. You have received Ksh{payout.first().amount} airtime from SAFEPAY on {formatted_time}\n\nThird party reference number: {res['receiptNumber']}"
                 senderMessage=f"{payout.first().reference_no} confirmed. You have successfully bought airtime worth Ksh{payout.first().amount} through SAFEPAY for  {payout.first().destination_account} on {formatted_time}\n\nThird party reference number: {res['receiptNumber']}"
                 messages=[
                     {
@@ -133,7 +162,7 @@ def payout(action, res):
                 ]
             elif action == "buyGoods":
                 # receiverMessage=f"{payout.first().reference_no} confirmed. You have received Ksh{payout.first().amount} airtime from SAFEPAY on {formatted_time}\n\Third party reference number: {res['receiptNumber']}"
-                senderMessage=f"{payout.first().reference_no} confirmed. You have successfully paid Ksh{payout.first().amount} through SAFEPAY for {payout.first().destination_account} on {formatted_time}\n\nMPESA reference number: {res['resultParameters'][0]['value']}"
+                senderMessage=f"{payout.first().reference_no} confirmed. You have successfully paid Ksh{payout.first().amount} through SAFEPAY for {payout.first().destination_account if res['resultParameters'][1]['value'] == '' else res['resultParameters'][1]['value']} on {formatted_time}\n\nMPESA reference number: {res['resultParameters'][0]['value']}"
                 messages=[
                     # {
                     #     "mobile_number":payout.first().destination_account,
@@ -150,7 +179,7 @@ def payout(action, res):
                 ]
             elif action == "payBill":
                 # receiverMessage=f"{payout.first().reference_no} confirmed. You have received Ksh{payout.first().amount} airtime from SAFEPAY on {formatted_time}\n\Third party reference number: {res['receiptNumber']}"
-                senderMessage=f"{payout.first().reference_no} confirmed. You have successfully paid Ksh{payout.first().amount} through SAFEPAY for {payout.first().destination_account} on {formatted_time}\n\nMPESA reference number: {res['resultParameters'][0]['value']}"
+                senderMessage=f"{payout.first().reference_no} confirmed. You have successfully paid Ksh{payout.first().amount} through SAFEPAY for {payout.first().destination_account if res['resultParameters'][1]['value'] == '' else res['resultParameters'][1]['value']} on {formatted_time}\n\nMPESA reference number: {res['resultParameters'][0]['value']}"
                 messages=[
                     # {
                     #     "mobile_number":payout.first().destination_account,
@@ -170,7 +199,7 @@ def payout(action, res):
 
 
         else:
-            payout = Payin.objects.filter(reference_no = res['reference']).update(callbackPayload = res, status=res['message'])
+            payout = Payout.objects.filter(reference_no = res['reference']).update(callbackPayload = res, message=res['message'], status="FAILED")
 
 
 

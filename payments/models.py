@@ -27,11 +27,14 @@ class Payout(models.Model):
     amount=models.FloatField(max_length=255)
     destination_account=models.CharField(max_length=255)
     channel=models.CharField(max_length=255)
-    date_initiated=models.DateTimeField(auto_now_add=True)
+    timestamp=models.DateTimeField(auto_now_add=True)
+    date_initiated=models.DateField(auto_now_add=True)
     responsePayload=models.TextField()
     callbackPayload=models.TextField()
     url=models.UUIDField()
+    message=models.CharField(max_length=255, default="PENDING")
     status=models.CharField(max_length=255, default="PENDING")
     type=models.CharField(max_length=255, default="TRANSFER")
+    fee = models.IntegerField(default=0)
 
     

@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 
 def generateRefNo():
     number = random.randrange(1, 999)
@@ -21,3 +22,4 @@ def format_phone_number(phone_number):
         raise Exception("Phone number too short")
     else:
         return "254" + phone_number[-9:]
+    
