@@ -138,10 +138,15 @@ def login(request):
 @api_view(['GET'])
 def getHomeData(request):
     totalMoneySpent=request.user.total_money_spent
-    moneyOnAirtime=math.floor(((request.user.money_on_airtime/totalMoneySpent)*100))
-    moneyOnPaybill=math.floor((request.user.money_on_paybill/totalMoneySpent)*100)
-    moneyOnBuyGoods=math.floor((request.user.money_on_buy_goods/totalMoneySpent)*100)
-    moneySent=math.floor((request.user.money_sent/totalMoneySpent)*100)
+    moneyOnAirtime=0
+    moneyOnPaybill=0
+    moneyOnBuyGoods=0
+    moneySent=0
+    if totalMoneySpent > 0:
+        moneyOnAirtime=math.floor(((request.user.money_on_airtime/totalMoneySpent)*100))
+        moneyOnPaybill=math.floor((request.user.money_on_paybill/totalMoneySpent)*100)
+        moneyOnBuyGoods=math.floor((request.user.money_on_buy_goods/totalMoneySpent)*100)
+        moneySent=math.floor((request.user.money_sent/totalMoneySpent)*100)
 
     return JsonResponse({
         "status":1,
