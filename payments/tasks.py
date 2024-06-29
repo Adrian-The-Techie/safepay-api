@@ -1,3 +1,5 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from celery import shared_task
 from payments.models import Payin, Payout
 from shared import generateRefNo
@@ -36,6 +38,8 @@ def notifyBySMS(messages):
 
 @shared_task()
 def collect(data, userId):
+    naiTime = datetime.now(pytz.timezone('Africa/Nairobi'))
+    formatted_time = naiTime.strftime('%d-%m-%Y at %H:%M:%S')
     payinData={
         "reference":generateRefNo(),
         "serviceProvider": data['serviceProvider'],
@@ -54,18 +58,31 @@ def collect(data, userId):
     if "receiverAccount" in data:
         disburseData["receiverAccount"]=data['receiverAccount']
     depoRes=transact(payinData)
-
-    payin = Payin.objects.create(
-        user=User.objects.get(id=userId),
-        reference_no=payinData['reference'],
-        amount=payinData['amount'],
-        source_account=payinData['accountNumber'],
-        responsePayload=depoRes,
-        url=uuid.uuid4(),
-        type="TRANSFER",
-        notes=data['notes'],
-        meta=disburseData
-    )
+    if(depoRes['status'] == '000001'):
+        payin = Payin.objects.create(
+            user=User.objects.get(id=userId),
+            reference_no=payinData['reference'],
+            amount=payinData['amount'],
+            source_account=payinData['accountNumber'],
+            responsePayload=depoRes,
+            url=uuid.uuid4(),
+            type="TRANSFER",
+            notes=data['notes'],
+            meta=disburseData
+        )
+    else:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            channel_layer.room_group_name,
+            {
+                "type": "send_message_to_frontend",
+                "message": {
+                    "status":0,
+                    "message":depoRes['message'],
+                    "timestamp": formatted_time,
+                },
+            },
+        )
 
 @shared_task()
 def payout(action, res):
@@ -73,32 +90,56 @@ def payout(action, res):
     formatted_time = naiTime.strftime('%d-%m-%Y at %H:%M:%S')
     senderPhone=""
     if action == "deposit":
+        payin = Payin.objects.filter(reference_no = res['reference'])
+        channel_layer = get_channel_layer()
+        print(channel_layer)
         if res['status'] == "000000":
             # update payin
-            payin = Payin.objects.filter(reference_no = res['reference'])
             payin.update(callbackPayload = res, status="DEPOSITED")
-            
+            async_to_sync(channel_layer.group_send)(
+                channel_layer.channel_name,
+                {
+                    "type": "send_message_to_frontend",
+                    "message": {
+                        "status":1,
+                        "message":res['message'],
+                        "timestamp": formatted_time,
+                    },
+                },
+            )
 
             # disburse
             disburseData=ast.literal_eval(payin.first().meta) # convert meta string to dictionary
             disburseData['reference']=generateRefNo()
 
             disburseRes=transact(disburseData)
+            if disburseRes['status'] == '000001':
+                payout = Payout.objects.create(
+                    user=payin.first().user,
+                    reference_no= disburseData['reference'],
+                    payin_ref_no=payin.first().reference_no,
+                    amount=disburseData['amount'],
+                    destination_account=disburseData['recipient'],
+                    responsePayload=disburseRes,
+                    url=uuid.uuid4(),
+                    fee=int(disburseData['fee']),
+                    type=_getPayoutType(disburseData['action'])
+                )
+                
 
-            payout = Payout.objects.create(
-                user=payin.first().user,
-                reference_no= disburseData['reference'],
-                payin_ref_no=payin.first().reference_no,
-                amount=disburseData['amount'],
-                destination_account=disburseData['recipient'],
-                responsePayload=disburseRes,
-                url=uuid.uuid4(),
-                fee=int(disburseData['fee']),
-                type=_getPayoutType(disburseData['action'])
+        else:
+            payin.update(callbackPayload = res, status=res['message'])
+            async_to_sync(channel_layer.group_send)(
+                channel_layer.room_group_name,
+                {
+                    "type": "send_message_to_frontend",
+                    "message": {
+                        "status":0,
+                        "message":res['message'],
+                        "timestamp": formatted_time,
+                    },
+                },
             )
-
-        if res['status'] == "500000":
-            payin = Payin.objects.filter(reference_no = res['reference']).update(callbackPayload = res, status=res['message'])
 
         
         # update payout

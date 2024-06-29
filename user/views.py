@@ -78,6 +78,35 @@ class UserView(APIView):
                 "phones":phones
             }
         })
+    @permission_classes([IsAuthenticated])
+    def put(self, request):
+        user=User.objects.get(id=request.user.id)
+        user.first_name = request.data['firstName']
+        user.last_name = request.data['lastName']
+        user.phone_number = request.data['primaryPhone']
+
+        user.save()
+
+        return JsonResponse({
+            "status":1,
+            "message":"Details updated successfully",
+            "data":{
+                    "primaryPhone":user.phone_number,
+                    "first_name":user.first_name,
+                    "last_name":user.last_name,
+                    "phones":[
+                        {
+                            "id": user.phone_number,
+                            "label": f"Primary phone: {user.phone_number}",
+                        },
+                        {
+                            "id": "other",
+                            "label": "Other",
+                        }
+                    ],
+                    "token": Token.objects.get_or_create(user=user)[0].key,
+                }
+        })
 
         # except Exception as e:
         #     return Response({
@@ -101,20 +130,11 @@ def login(request):
                     "id": user.phone_number,
                     "label": f"Primary phone: {user.phone_number}",
                 },
-            ]
-            if(user.secondary_phone != None):
-                phones.append(
-                {
-                    "id": user.secondary_phone,
-                    "label": f"Secondary phone: {user.secondary_phone}",
-                
-                })
-            phones.append(
                 {
                     "id": "other",
                     "label": "Other",
-                })
-
+                }
+            ]
 
             response = {
                 "status": 1,
@@ -131,7 +151,7 @@ def login(request):
             return JsonResponse(response)
     except User.DoesNotExist:
         return JsonResponse(
-            {"status":0,"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            {"status":0,"error": "User not found. Please create account to Pay Safely"}, status=status.HTTP_404_NOT_FOUND
         )
 
 @permission_classes([IsAuthenticated])

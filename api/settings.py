@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'user',
     'payments',
     'notify',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -80,7 +82,7 @@ TEMPLATES = [
         },
     },
 ]
-
+ASGI_APPLICATION = 'api.asgi.application'
 WSGI_APPLICATION = 'api.wsgi.application'
 
 
@@ -168,3 +170,12 @@ cloudinary.config(
 # Celery settings
 CELERY_BROKER_URL = config('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(config('CHANNEL_REDIS_URL'))],
+        },
+    },
+}
