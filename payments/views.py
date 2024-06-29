@@ -49,19 +49,19 @@ def result(request):
     formatted_time = naiTime.strftime('%d-%m-%Y at %H:%M:%S')
 
     payout.delay(action, res)
-    if action == 'deposit':
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-                    Payin.objects.get(reference_no = res['reference']).user.phone_number,
-                    {
-                        "type": "send_message_to_frontend",
-                        "message": {
-                            "status":1 if res['status'] == '000000' else 0,
-                            "message":"Deposit successful. Your transaction is being fulfilled.\nThank you for using Safepay" if res['status'] == '000000' else res['message'],
-                            "timestamp": formatted_time,
-                        },
-                    },
-                )
+    # if action == 'deposit':
+    #     channel_layer = get_channel_layer()
+    #     async_to_sync(channel_layer.group_send)(
+    #                 Payin.objects.get(reference_no = res['reference']).user.phone_number,
+    #                 {
+    #                     "type": "send_message_to_frontend",
+    #                     "message": {
+    #                         "status":1 if res['status'] == '000000' else 0,
+    #                         "message":"Deposit successful. Your transaction is being fulfilled.\nThank you for using Safepay" if res['status'] == '000000' else res['message'],
+    #                         "timestamp": formatted_time,
+    #                     },
+    #                 },
+    #             )
     return JsonResponse(
         {
             "status":1,

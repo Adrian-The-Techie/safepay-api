@@ -96,17 +96,17 @@ def payout(action, res):
         if res['status'] == "000000":
             # update payin
             payin.update(callbackPayload = res, status="DEPOSITED")
-            # async_to_sync(channel_layer.group_send)(
-            #     channel_layer.channel_name,
-            #     {
-            #         "type": "send_message_to_frontend",
-            #         "message": {
-            #             "status":1,
-            #             "message":res['message'],
-            #             "timestamp": formatted_time,
-            #         },
-            #     },
-            # )
+            async_to_sync(channel_layer.group_send)(
+                Payin.objects.get(reference_no = res['reference']).user.phone_number,
+                {
+                    "type": "send_message_to_frontend",
+                    "message": {
+                            "status":1 if res['status'] == '000000' else 0,
+                            "message":"Deposit successful. Your transaction is being fulfilled.\nThank you for using Safepay" if res['status'] == '000000' else res['message'],
+                            "timestamp": formatted_time,
+                        },
+                },
+            )
 
             # disburse
             disburseData=ast.literal_eval(payin.first().meta) # convert meta string to dictionary
