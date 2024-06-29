@@ -58,31 +58,31 @@ def collect(data, userId):
     if "receiverAccount" in data:
         disburseData["receiverAccount"]=data['receiverAccount']
     depoRes=transact(payinData)
-    if(depoRes['status'] == '000001'):
-        payin = Payin.objects.create(
-            user=User.objects.get(id=userId),
-            reference_no=payinData['reference'],
-            amount=payinData['amount'],
-            source_account=payinData['accountNumber'],
-            responsePayload=depoRes,
-            url=uuid.uuid4(),
-            type="TRANSFER",
-            notes=data['notes'],
-            meta=disburseData
-        )
-    else:
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            channel_layer.room_group_name,
-            {
-                "type": "send_message_to_frontend",
-                "message": {
-                    "status":0,
-                    "message":depoRes['message'],
-                    "timestamp": formatted_time,
-                },
-            },
-        )
+    # if(depoRes['status'] == '000001'):
+    payin = Payin.objects.create(
+        user=User.objects.get(id=userId),
+        reference_no=payinData['reference'],
+        amount=payinData['amount'],
+        source_account=payinData['accountNumber'],
+        responsePayload=depoRes,
+        url=uuid.uuid4(),
+        type="TRANSFER",
+        notes=data['notes'],
+        meta=disburseData
+    )
+    # else:
+    #     channel_layer = get_channel_layer()
+    #     async_to_sync(channel_layer.group_send)(
+    #         channel_layer.room_group_name,
+    #         {
+    #             "type": "send_message_to_frontend",
+    #             "message": {
+    #                 "status":0,
+    #                 "message":depoRes['message'],
+    #                 "timestamp": formatted_time,
+    #             },
+    #         },
+    #     )
 
 @shared_task()
 def payout(action, res):
@@ -96,17 +96,17 @@ def payout(action, res):
         if res['status'] == "000000":
             # update payin
             payin.update(callbackPayload = res, status="DEPOSITED")
-            async_to_sync(channel_layer.group_send)(
-                channel_layer.channel_name,
-                {
-                    "type": "send_message_to_frontend",
-                    "message": {
-                        "status":1,
-                        "message":res['message'],
-                        "timestamp": formatted_time,
-                    },
-                },
-            )
+            # async_to_sync(channel_layer.group_send)(
+            #     channel_layer.channel_name,
+            #     {
+            #         "type": "send_message_to_frontend",
+            #         "message": {
+            #             "status":1,
+            #             "message":res['message'],
+            #             "timestamp": formatted_time,
+            #         },
+            #     },
+            # )
 
             # disburse
             disburseData=ast.literal_eval(payin.first().meta) # convert meta string to dictionary
@@ -129,17 +129,17 @@ def payout(action, res):
 
         else:
             payin.update(callbackPayload = res, status=res['message'])
-            async_to_sync(channel_layer.group_send)(
-                channel_layer.room_group_name,
-                {
-                    "type": "send_message_to_frontend",
-                    "message": {
-                        "status":0,
-                        "message":res['message'],
-                        "timestamp": formatted_time,
-                    },
-                },
-            )
+            # async_to_sync(channel_layer.group_send)(
+            #     channel_layer.room_group_name,
+            #     {
+            #         "type": "send_message_to_frontend",
+            #         "message": {
+            #             "status":0,
+            #             "message":res['message'],
+            #             "timestamp": formatted_time,
+            #         },
+            #     },
+            # )
 
         
         # update payout
