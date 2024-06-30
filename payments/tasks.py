@@ -60,8 +60,7 @@ def collect(data, userId):
     if "receiverAccount" in data:
         disburseData["receiverAccount"]=data['receiverAccount']
     depoRes=transact(payinData)
-    if(depoRes['status'] == '000001'):
-        payin = Payin.objects.create(
+    payin = Payin.objects.create(
             user=User.objects.get(id=userId),
             reference_no=payinData['reference'],
             amount=payinData['amount'],
@@ -70,12 +69,10 @@ def collect(data, userId):
             url=uuid.uuid4(),
             type="TRANSFER",
             notes=data['notes'],
-            meta=disburseData
-        )
-    else:
-        
+            meta=disburseData)
+    if depoRes['status'] != '000001':
         async_to_sync(channel_layer.group_send)(
-            User.objects.get(id=userId).phone_number,
+            payin.user.phone_number,
             {
                 "type": "send_message_to_frontend",
                 "message": {
