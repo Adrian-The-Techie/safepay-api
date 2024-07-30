@@ -120,7 +120,7 @@ def payout(action, res):
                     destination_account=disburseData['recipient'],
                     responsePayload=disburseRes,
                     url=uuid.uuid4(),
-                    fee=int(disburseData['fee']),
+                    fee=0,
                     type=_getPayoutType(disburseData['action'])
                 )
                 
