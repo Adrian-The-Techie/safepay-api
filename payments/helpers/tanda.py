@@ -75,8 +75,6 @@ def _getRequestParameters(action, data):
                 "label": "accountNumber"
             },)
 
-
-    print(requestParameters)
     
     return requestParameters
 

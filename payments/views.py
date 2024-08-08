@@ -47,6 +47,9 @@ def result(request):
     res=request.data
     naiTime = datetime.now(pytz.timezone('Africa/Nairobi'))
     formatted_time = naiTime.strftime('%d-%m-%Y at %H:%M:%S')
+    print(action)
+    print("----------------------------------")
+    print(res)
 
     payout.delay(action, res)
     return JsonResponse(
