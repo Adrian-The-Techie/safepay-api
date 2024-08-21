@@ -15,7 +15,7 @@ def sendSms(messages):
     data = {
             "profile_code": config('SMS_PROFILE_ID'),
             "messages": messages,
-            "dlr_callback_url": config('LIVE_ENDPOINT')
+            "dlr_callback_url": "https://5aab-2c0f-2a80-10ee-3010-6dab-1016-7d3c-7b3a.ngrok-free.app"
         }
     
 
