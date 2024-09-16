@@ -11,6 +11,14 @@ import json
 @api_view(['POST', 'GET'])
 def index(request):
 
-    requests.post(config('USSD_TEST_ENDPOINT'), data=request.data)
+    params = {
+        "sessionId": request.GET['session_id'],
+        "serviceCode": request.GET['service_code'],
+        "msisdn": request.GET['msisdn'],
+        "menu_string": request.GET['menu_string'],
+        "ussd_string": request.GET['ussd_string']
+    }
+
+    requests.get(config('USSD_TEST_ENDPOINT'), params=params)
 
     return HttpResponse("END System under maintenance", content_type="text/plain")
