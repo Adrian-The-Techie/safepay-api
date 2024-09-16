@@ -13,4 +13,4 @@ def index(request):
 
     requests.post(config('USSD_TEST_ENDPOINT'), data=request.data)
 
-    return HttpResponse("System under maintenance", content_type="text/plain")
+    return HttpResponse("END System under maintenance", content_type="text/plain")
