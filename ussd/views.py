@@ -19,7 +19,7 @@ def index(request):
         "ussd_string": request.GET['ussd_string']
     }
 
-    print(request.GET)
+    print(params)
 
     response = requests.get(config('USSD_TEST_ENDPOINT'), params=params)
 
