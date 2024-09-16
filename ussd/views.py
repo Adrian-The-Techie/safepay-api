@@ -1,4 +1,5 @@
-from django.http import JsonResponse
+
+from django.http import HttpResponse
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 import requests
@@ -12,4 +13,4 @@ def index(request):
 
     requests.post(config('USSD_TEST_ENDPOINT'), data=request.data)
 
-    return JsonResponse({"status": 1, "message": "USSD response"})
+    return HttpResponse("System under maintenance")
