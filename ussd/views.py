@@ -12,13 +12,15 @@ import json
 def index(request):
 
     params = {
-        "sessionId": request.GET['session_id'],
-        "serviceCode": request.GET['service_code'],
+        "session_id": request.GET['session_id'],
+        "service_code": request.GET['service_code'],
         "msisdn": request.GET['msisdn'],
         "menu_string": request.GET['menu_string'],
         "ussd_string": request.GET['ussd_string']
     }
 
-    requests.get(config('USSD_TEST_ENDPOINT'), params=params)
+    print(request.GET)
+
+    response = requests.get(config('USSD_TEST_ENDPOINT'), params=params)
 
     return HttpResponse("END System under maintenance", content_type="text/plain")
