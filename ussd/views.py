@@ -20,7 +20,7 @@ def index(request):
         "menu_string": request.GET['menu_string'],
         "ussd_string": request.GET['ussd_string']
     }
-    # response=""
+    response=""
 
     # print(params)
 
@@ -36,8 +36,9 @@ def index(request):
     # else:
     #     response = "END " + params['menu_string']
 
-    response = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
+    res = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
 
-    print(response.json())
+    formattedRes=res.json()
+    print(formattedRes)
 
-    return HttpResponse(response, content_type="text/plain")
+    return HttpResponse(formattedRes.get('message'), content_type="text/plain")
