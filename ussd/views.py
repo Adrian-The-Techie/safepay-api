@@ -6,6 +6,8 @@ import requests
 from decouple import config
 import json
 
+from user.models import User
+
 # Create your views here.
 
 @api_view(['POST', 'GET'])
@@ -18,9 +20,24 @@ def index(request):
         "menu_string": request.GET['menu_string'],
         "ussd_string": request.GET['ussd_string']
     }
+    # response=""
 
     # print(params)
 
-    response = requests.get(config('USSD_TEST_ENDPOINT'), params=params)
+    # if params['menu_string'] == "":
+    #     user = User.objects.filter(phone_number=params['msisdn'])
 
-    return HttpResponse("END System under maintenance", content_type="text/plain")
+    #     if(len(user) > 0):
+    #         # start 
+    #         response ="CON Welcome " + user[0].first_name + " " + user[0].last_name + ", what would you like to do?\n1. Send money\n2. Request money\n3. Get my account balance"
+    #     else:
+    #         response = "END No such user found"
+    
+    # else:
+    #     response = "END " + params['menu_string']
+
+    response = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
+
+    print(response.json())
+
+    return HttpResponse(response, content_type="text/plain")
