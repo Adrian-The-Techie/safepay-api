@@ -47,7 +47,7 @@ def index(request):
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
-                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction"
+                response = "END Enter M-PESA pin to finish transaction."
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -81,7 +81,7 @@ def index(request):
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
-                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction."
+                response = "END Enter M-PESA pin to finish transaction."
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -114,7 +114,7 @@ def index(request):
 
         elif len(splitUssdString) == 4:
             if splitUssdString[3] == "1":
-                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction"
+                response = "END Enter M-PESA pin to finish transaction."
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -149,7 +149,7 @@ def index(request):
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
-                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction"
+                response = "END Enter M-PESA pin to finish transaction."
 
                 transactionPayload = {
                     "source": params['msisdn'],
