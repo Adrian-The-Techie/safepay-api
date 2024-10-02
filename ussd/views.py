@@ -25,7 +25,7 @@ def index(request):
     }
     response="CON system under maintenance"
 
-    splitUssdString = params['ussd_string'].split('*')
+    splitUssdString = params['ussd_string'].replace('*98', '').split('*')
 
     print(splitUssdString)
 
