@@ -79,7 +79,7 @@ def _getRequestParameters(action, data):
     return requestParameters
 
 
-def transact(data):
+def transact(data, channel="mobile"):
     print(data)
     commandID= _getAction(action=data['action'])
     requestParameters= _getRequestParameters(commandID, data)
@@ -90,7 +90,7 @@ def transact(data):
         "referenceParameters":[
             {
                 "id":"resultUrl",
-                "value":f"{config('LIVE_ENDPOINT')}/api/v1/payments/result?action={data['action']}",
+                "value":f"{config('LIVE_ENDPOINT')}/api/v1/payments/result?action={data['action']}&channel={channel}",
             }
         ],
         "reference":data["reference"]

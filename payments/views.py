@@ -8,6 +8,7 @@ from django.db.models import F, Q, Sum
 import ast
 
 from payments.serializers import PayoutsSerializer
+from ussd.tasks import ussdPayout
 from .tasks import collect, payout
 from .models import Payout, Payin
 from datetime import  datetime
@@ -44,6 +45,7 @@ def send(request):
 @api_view(['POST'])
 def result(request):
     action = request.query_params['action']
+    channel=request.query_params['channel']
     res=request.data
     naiTime = datetime.now(pytz.timezone('Africa/Nairobi'))
     formatted_time = naiTime.strftime('%d-%m-%Y at %H:%M:%S')
@@ -51,7 +53,10 @@ def result(request):
     print("----------------------------------")
     print(res)
 
-    payout.delay(action, res)
+    if(channel == "ussd"):
+        ussdPayout.delay(action, res)
+    else:
+        payout.delay(action, res)
     return JsonResponse(
         {
             "status":1,
