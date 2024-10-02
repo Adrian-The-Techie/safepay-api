@@ -1,6 +1,6 @@
 def sendMoneyFees(amount):
 
-    return 0
+    # return 0
     if amount >=10 and amount <=999:
         return 50
     elif amount >=1000 and amount <=1499:
@@ -14,7 +14,7 @@ def sendMoneyFees(amount):
     
 def payBillBuyGoodsFee(amount):
 
-    return 0
+    # return 0
     if amount >=10 and amount <=999:
         return 45
     elif amount >=1000 and amount <=1499:
