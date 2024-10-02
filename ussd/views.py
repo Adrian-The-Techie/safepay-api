@@ -43,7 +43,7 @@ def index(request):
         elif len(splitUssdString) == 4:
             # calculate fees
             fees = sendMoneyFees(int(splitUssdString[3]))
-            response = "CON Please review transaction: \nRecipient: " + splitUssdString[2] + "Destination channel : " + _getDestChannel(splitUssdString[1]) + "\nAmount: " + splitUssdString[3] + "\nFees: " + str(fees) + "\nTotal: " + str(int(splitUssdString[3]) + fees) + "\n\n1. Confirm\n2. Cancel"
+            response = "CON Please review transaction: \nRecipient: " + splitUssdString[2] + "\nDestination channel : " + _getDestChannel(splitUssdString[1]) + "\nAmount: " + splitUssdString[3] + "\nFees: " + str(fees) + "\nTotal: " + str(int(splitUssdString[3]) + fees) + "\n\n1. Confirm\n2. Cancel"
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
@@ -174,10 +174,10 @@ def index(request):
     # else:
     #     response = "END " + params['menu_string']
 
-    # res = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
+    res = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
 
-    # formattedRes=res.json()
-    # print(formattedRes)
+    formattedRes=res.json()
+    print(formattedRes)
 
     # DEV MODE
     # return JsonResponse({
@@ -186,4 +186,4 @@ def index(request):
 
     # PROD MODE
 
-    return HttpResponse(response, content_type="text/plain")
+    return HttpResponse(formattedRes.get('message'), content_type="text/plain")
