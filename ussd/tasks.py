@@ -87,7 +87,10 @@ def collect(data):
     if "receiverAccount" in data:
         disburseData["receiverAccount"]=data['receiverAccount']
     depoRes=transact(payinData, channel="ussd")
+    user=User.objects.filter(phone_number=payinData.get('accountNumber'))
+    
     payin = Payin.objects.create(
+            user=user.first() if user.exists() else None,
             reference_no=payinData['reference'],
             amount=payinData['amount'],
             source_account=payinData['accountNumber'],
@@ -138,6 +141,7 @@ def ussdPayout(action, res):
             disburseRes=transact(disburseData, channel='ussd')
             if disburseRes['status'] == '000001':
                 payout = Payout.objects.create(
+                    user=payin.first().user,
                     reference_no= disburseData['reference'],
                     payin_ref_no=payin.first().reference_no,
                     amount=disburseData['amount'],

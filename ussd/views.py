@@ -47,7 +47,7 @@ def index(request):
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
-                response = "END Your transaction is being processed. Thank you for using Safepay"
+                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction"
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -76,12 +76,12 @@ def index(request):
 
         elif len(splitUssdString) == 4:
             # calculate fees
-            fees = sendMoneyFees(int(splitUssdString[3]))
+            fees = 0
             response = "CON Please review transaction: \nRecipient: " + splitUssdString[2] + "\nDestination channel : " + _getAirtimeDestChannel(splitUssdString[1]) + "\nAmount: " + splitUssdString[3] + "\nFees: " + str(fees) + "\nTotal: " + str(int(splitUssdString[3]) + fees) + "\n1. Confirm\n2. Cancel"
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
-                response = "END Your transaction is being processed. Thank you for using Safepay"
+                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction."
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -114,7 +114,7 @@ def index(request):
 
         elif len(splitUssdString) == 4:
             if splitUssdString[3] == "1":
-                response = "END Your transaction is being processed. Thank you for using Safepay"
+                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction"
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -149,7 +149,7 @@ def index(request):
 
         elif len(splitUssdString) == 5:
             if splitUssdString[4] == "1":
-                response = "END Your transaction is being processed. Thank you for using Safepay"
+                response = "END Transaction initiated. STK Push has been initiated. Please enter your M-PESA pin to finish transaction"
 
                 transactionPayload = {
                     "source": params['msisdn'],
@@ -174,10 +174,10 @@ def index(request):
     # else:
     #     response = "END " + params['menu_string']
 
-    res = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
+    # res = requests.post(config('USSD_TEST_ENDPOINT'), params=params)
 
-    formattedRes=res.json()
-    print(formattedRes)
+    # formattedRes=res.json()
+    # print(formattedRes)
 
     # DEV MODE
     # return JsonResponse({
@@ -186,4 +186,4 @@ def index(request):
 
     # PROD MODE
 
-    return HttpResponse(formattedRes.get('message'), content_type="text/plain")
+    return HttpResponse(response, content_type="text/plain")
