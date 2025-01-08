@@ -148,7 +148,7 @@ def ussdPayout(action, res):
                     destination_account=disburseData['recipient'],
                     responsePayload=disburseRes,
                     url=uuid.uuid4(),
-                    fee=0,
+                    fee=disburseData['fee'],
                     type=_getPayoutType(disburseData['action'])
                 )
                 
