@@ -71,6 +71,7 @@ def getFees(request):
     type = request.query_params['type']
     fee=20
     amount=int(request.data['amount'])
+    amountAfterFee=0
     if type == "sendMoney":
         fee = sendMoneyFees(amount)
         amountAfterFee = amount + fee
@@ -85,8 +86,8 @@ def getFees(request):
             "status":1,
             "data":{
                 "amount":amount,
-                "fee":fee['fee'],
-                "merchant":fee['name'] if 'name' in fee else None,
+                "fee":fee['fee'] if type == "payBill" or type == "buyGoods" else fee,
+                "merchant":fee['name'] if type == "payBill" or type == "buyGoods" and 'name' in fee  else None,
                 "amountAfterFee":amountAfterFee,
             }
         }
