@@ -73,19 +73,21 @@ def getFees(request):
     amount=int(request.data['amount'])
     if type == "sendMoney":
         fee = sendMoneyFees(amount)
+        amountAfterFee = amount + fee
     elif type == "buyAirtime":
         fee = 0
     elif type == "payBill" or type == "buyGoods":
-        fee = payBillBuyGoodsFee(amount)
-    
-    amountAfterFee = amount + fee
+        fee = payBillBuyGoodsFee(amount, request.data['shortcode'], request.data['channel'], type=type)
+        
+        amountAfterFee = amount + fee['fee']
     return JsonResponse(
         {
             "status":1,
             "data":{
                 "amount":amount,
-                "fee":fee,
-                "amountAfterFee":amountAfterFee
+                "fee":fee['fee'],
+                "merchant":fee['name'] if 'name' in fee else None,
+                "amountAfterFee":amountAfterFee,
             }
         }
     )

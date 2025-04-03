@@ -104,3 +104,16 @@ def transact(data, channel="mobile"):
     response = requests.post(REQUEST_URL, json=payload, headers=headers)
 
     return response.json()
+
+
+def nameLookup(data):
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {generateToken()['access_token']}"
+    }
+
+    response = requests.get(f"{config('TANDA_LIVE_ENDPOINT')}/registry/v1/countries/KE/mmos/{data.get('channel')}/{'businesses' if data['type'] == 'payBill' else 'merchants'}/{data.get('shortcode')}", headers=headers)
+
+    
+    return response.json()
